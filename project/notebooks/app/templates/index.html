@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#c92335">
+    <title>Обработка товаров — ProductLab</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-shell">
+       
+
+        <main>
+            <section class="intro">
+                <div class="eyebrow"><span class="eyebrow-line"></span> ИНСТРУМЕНТ ДЛЯ КАТАЛОГА</div>
+                <h1>Из сырого описания<br><span>в структурированные данные.</span></h1>
+                <p>Добавьте информацию о товаре — система выделит характеристики и подготовит результат в формате JSON.</p>
+            </section>
+
+            <div class="layout">
+                <form action="/submit" method="post" class="pane pane-form"
+                      onsubmit="const button = this.querySelector('button[type=submit]'); button.disabled = true; button.innerHTML = '<span class=&quot;spinner&quot;></span> Обрабатываем товар…';">
+                    <div class="pane-heading">
+                        <div class="heading-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4.5 7v10L12 21l7.5-4V7L12 3Z"/><path d="m4.8 7.2 7.2 4 7.2-4M12 11.2V21"/></svg></div>
+                        <div><h2>Данные товара</h2><p>Заполните основные поля</p></div>
+                    </div>
+
+                    <label for="title">Название товара <span class="required">*</span></label>
+                    <input id="title" type="text" name="title" required value="{{ title or '' }}"
+                           placeholder="Например, Электрочайник Delta Lux DL-1285" autocomplete="off">
+
+                    <div class="label-row"><label for="description">Описание товара</label></div>
+                    <textarea id="description" name="description" rows="10" placeholder="Вставьте описание от продавца: материалы, размеры, цвет и другие характеристики…">{{ description or '' }}</textarea>
+                    <div class="field-footnote"><span class="info-icon">i</span> Чем подробнее описание, тем полнее результат.</div>
+
+                    <button type="submit" class="primary-button"><span>Обработка товар</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+                    <div class="secure-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.9 7.8 7 10 4.1-2.2 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg> Результат формируется автоматически</div>
+                </form>
+
+                <section class="pane pane-result" aria-live="polite">
+                    <div class="pane-heading result-heading">
+                        <div class="heading-icon dark-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="m8 13 2.5 2.5L16 10"/></svg></div>
+                        <div><h2>Результат</h2><p>Структурированные характеристики</p></div>
+                    </div>
+
+                    {% if error %}
+                        <div class="result-state error-state"><div class="state-symbol">!</div><div><h3>Не удалось обработать товар</h3><p>Проверьте данные или попробуйте ещё раз.</p></div></div>
+                        <pre class="error">{{ error }}</pre>
+                    {% elif json_str %}
+                        <div class="result-toolbar"><span class="format-tag"><span class="format-dot"></span> JSON</span><button type="button" class="copy-button" onclick="copyResult(this)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg> <span>Копировать</span></button></div>
+                        <pre class="json" id="json-result">{{ json_str }}</pre>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-illustration"><div class="doc-back"></div><div class="doc-front"><span></span><span></span><span></span><i>{ }</i></div><div class="sparkle sparkle-one">✦</div><div class="sparkle sparkle-two">✧</div></div>
+                            <h3>Здесь появится результат</h3>
+                            <p>Заполните данные слева и нажмите <strong>«Обработать товар»</strong>, чтобы получить JSON с характеристиками.</p>
+                            <div class="empty-hint"><span class="hint-check">✓</span> Готово для дальнейшей обработки</div>
+                        </div>
+                    {% endif %}
+                </section>
+            </div>
+        </main>
+        
+    </div>
+    <script>
+        async function copyResult(button) {
+            const result = document.getElementById('json-result');
+            if (!result) return;
+            const label = button.querySelector('span');
+            try {
+                await navigator.clipboard.writeText(result.textContent);
+                label.textContent = 'Скопировано';
+                button.classList.add('copied');
+                setTimeout(() => { label.textContent = 'Копировать'; button.classList.remove('copied'); }, 1800);
+            } catch (error) {
+                const range = document.createRange();
+                range.selectNodeContents(result);
+                const selection = window.getSelection();
+                selection.removeAllRanges(); selection.addRange(range);
+                label.textContent = 'Выделено для копирования';
+            }
+        }
+    </script>
+</body>
+</html>

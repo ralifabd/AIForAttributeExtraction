@@ -1,0 +1,17 @@
+
+services:
+  web:
+    build:
+      context: ..                    # корень проекта: там notebooks/
+      dockerfile: docker/Dockerfile
+    image: product-enrichment:latest
+    container_name: product-enrichment
+    ports:
+      - "8000:8000"
+    environment:
+      DATA_DIR: /app/data
+    volumes:
+      # базы и схема - в папке data/ корня проекта;
+      # rw - потому что сервис дописывает расход токенов в rag.sqlite
+      - ../data:/app/data
+    restart: unless-stopped

@@ -1,0 +1,10 @@
+# Что не копировать в образ. Файл называется Dockerfile.dockerignore,
+# потому что контекст сборки - корень проекта, а Dockerfile лежит в docker/.
+data/
+reports/
+**/.env
+.git/
+**/__pycache__/
+**/.ipynb_checkpoints/
+**/*.ipynb
+**/*.pyc
